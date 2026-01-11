@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InsightDoc AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="mobile-header">
+        <button id="menu-btn"><i class="fas fa-bars"></i></button>
+        <h2>InsightDoc AI</h2>
+    </div>
+
+    <div class="container">
+        <aside id="sidebar">
+            <div class="logo-area">
+                <h2><i class="fas fa-robot"></i> InsightDoc</h2>
+                <p>Multimodal Technical Assistant</p>
+            </div>
+
+            <div class="upload-zone" id="drop-zone">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drag & Drop PDF/Docx</p>
+                <input type="file" id="file-input" hidden>
+                <button class="btn-primary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+            </div>
+
+            <div class="status-list" id="status-list">
+                </div>
+        </aside>
+
+        <main class="workspace">
+            <section class="chat-section">
+                <div class="chat-box" id="chat-box">
+                    <div class="message bot">
+                        <p>Hello! Upload a technical manual, and I'll help you navigate it. I can see diagrams too!</p>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Ask about the manual (e.g., 'What does the diagram on page 5 show?')">
+                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </section>
+
+            <section class="pdf-section" id="pdf-viewer">
+                <iframe id="pdf-frame" src="" title="PDF Viewer"></iframe>
+                <div class="pdf-placeholder">
+                    <i class="fas fa-file-pdf"></i>
+                    <p>Document Viewer</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
