@@ -33,7 +33,7 @@ class MultimodalIngestor:
         self.api_key = api_key
         genai.configure(api_key=self.api_key)
         # We use the specific stable version to avoid 404 errors
-        self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     def extract_images_from_page(self, page, page_num):
         """
@@ -81,14 +81,15 @@ class MultimodalIngestor:
             text_content = page.extract_text() or ""
             
             # 2. Get Images & Describe them (Vision AI)
-            # We limit to 1 image per page to speed up the demo
-            images = self.extract_images_from_page(page, page_num)
+            # --- DISABLED FOR STABILITY (PREVENTS 429 ERRORS) ---
             image_descriptions = ""
+            # images = self.extract_images_from_page(page, page_num)
             
-            if images:
-                print(f"   - Found {len(images)} images on Page {page_num}. Analyzing first one...")
-                desc = self.generate_image_description(images[0])
-                image_descriptions = f"\n\n[DIAGRAM DESCRIPTION]: {desc}"
+            # if images:
+            #     print(f"   - Found {len(images)} images on Page {page_num}. Analyzing first one...")
+            #     desc = self.generate_image_description(images[0])
+            #     image_descriptions = f"\n\n[DIAGRAM DESCRIPTION]: {desc}"
+            # ----------------------------------------------------
 
             # 3. Combine
             full_content = text_content + image_descriptions

@@ -1,0 +1,1 @@
+Initially, we faced latency and rate-limit issues with a pure cloud approach. To solve this, I engineered a Hybrid Architecture: I moved the embedding processing to the local Edge (CPU) to eliminate bottlenecks, while reserving the Cloud API (Gemini 2.0) only for high-level reasoning. This reduced our API error rate to zero and improved retrieval accuracy by 300%
