@@ -1,0 +1,122 @@
+[
+  {
+    "question": "What is the minimum interrupt execution response time in clock cycles, and what specific actions occur during this period?",
+    "agent_answer": "The interrupt execution response for all enabled AVR\u00ae interrupts is four clock cycles minimum [Page 16]. During this period, the program counter is pushed onto the stack [Page 16].\n",
+    "expected": "The minimum interrupt execution response time is four clock cycles. During this period, the program counter (PC) is pushed onto the stack, the stack pointer is decremented by two, and the interrupt vector address is executed.",
+    "latency": 47.7
+  },
+  {
+    "question": "To prevent unintentional EEPROM writes, what specific sequence of steps must be followed when writing to the EEPROM?",
+    "agent_answer": "To prevent unintentional EEPROM writes, a specific write procedure must be followed [Page 19]. The following procedure should be followed when writing the EEPROM (the order of steps 3 and 4 is not essential) [Page 21]:\n1. Wait until EEPE becomes zero [Page 21].\n2. Wait until SELFPRGEN in SPMCSR becomes zero [Page 21].\n3. Write new EEPROM address to EEAR (optional) [Page 21].\n4. Write new EEPROM data to EEDR (optional) [Page 21].\n5. Write a logical one to the EEMPE bit while writing a zero to EEPE in EECR [Page 21].\n6. Within four clock cycles after setting EEMPE, write a logical one to EEPE [Page 21].\n",
+    "expected": "The procedure is:\n1. Wait until the EEPE bit becomes zero.\n2. Wait until SELFPRGEN in SPMCSR becomes zero.\n3. Write the new EEPROM address to EEAR.\n4. Write the new EEPROM data to EEDR.\n5. Write a logical one to the EEMPE bit while writing a zero to EEPE in EECR.\n6. Within four clock cycles after setting EEMPE, write a logical one to EEPE.",
+    "latency": 12.77
+  },
+  {
+    "question": "How does the 'Alternative 1' method for filling the temporary page buffer during Flash self-programming differ from 'Alternative 2'?",
+    "agent_answer": "With Alternative 1, the temporary page buffer is filled before a page erase, while with Alternative 2, the buffer is filled after the page erase [Page 234, 223]. Alternative 1 provides a read-modify-write feature, allowing user software to read the page, make changes, and write back the modified data, but Alternative 2 does not allow reading the old data while loading since the page is already erased [Page 234, 223].\n",
+    "expected": "Alternative 1 fills the buffer before the page erase, allowing for a read-modify-write operation where data can be read, modified, and written back. Alternative 2 fills the buffer after the page erase; since the page is already erased, old data cannot be read while loading.",
+    "latency": 6.14
+  },
+  {
+    "question": "In the context of the Watchdog Timer, what is the timed sequence required to clear the Watchdog System Reset Flag (WDE) or change the prescaler bits?",
+    "agent_answer": "To clear the WDE bit, and/or change the prescaler bits, WDCE must be set [Page 47]. Once written to one, hardware will clear WDCE after four clock cycles [Page 47].\n\nThe sequence for clearing WDE and changing time-out configuration is as follows:\n1. In the same operation, write a logic one to the watchdog change enable bit (WDCE) and WDE. A logic one must be written to WDE regardless of the previous value of the WDE bit [Page 44].\n2. Within the next four clock cycles, write the WDE and watchdog prescaler bits (WDP) as desired, but with the WDCE bit cleared. This must be done in one operation [Page 44].\n",
+    "expected": "In the same operation, write a logic one to the Watchdog Change Enable bit (WDCE) and WDE. Within the next four clock cycles, write the desired values to WDE and the Watchdog Prescaler bits (WDP), ensuring WDCE is cleared.",
+    "latency": 7.7
+  },
+  {
+    "question": "When the ADC is in Free Running mode, how many clock cycles does the very first conversion take compared to normal conversions, and why?",
+    "agent_answer": "The first conversion in free running mode takes 25 ADC clock cycles, while normal conversions take 13 ADC clock cycles because the first conversion performs initialization of the ADC [Page 218]. Timing diagrams for free running conversion are available [Page 210].\n",
+    "expected": "The first conversion takes 25 ADC clock cycles instead of the normal 13. This extended time is required to perform initialization of the ADC.",
+    "latency": 6.75
+  },
+  {
+    "question": "Which Sleep Modes allow the Timer/Counter2 to continue operating if it is running in asynchronous mode?",
+    "agent_answer": "Timer/Counter2 can continue operating in asynchronous mode in \"Idle\", \"ADC noise Reduction\", \"Power-save\", and \"Extended Standby\" sleep modes [Page 34].\n",
+    "expected": "Timer/Counter2 in asynchronous mode can continue operating in Idle, ADC Noise Reduction, Power-save, and Extended Standby modes.",
+    "latency": 9.54
+  },
+  {
+    "question": "How does the setting of the Clock Phase (CPHA) bit in the SPI Control Register affect data sampling relative to the SCK edge?",
+    "agent_answer": "The clock phase bit (CPHA) determines if data is sampled on the leading (first) or trailing (last) edge of SCK [Page 141]. Table 18-4 on page 141 summarizes the CPHA functionality [Page 141]. There are also diagrams that show SPI transfer formats with CPHA=0 and CPHA=1 [Page 139, 140].\n",
+    "expected": "If CPHA is 0, data is sampled on the leading (first) edge of SCK. If CPHA is 1, data is sampled on the trailing (last) edge of SCK.",
+    "latency": 5.84
+  },
+  {
+    "question": "What is the definition of Differential Non-linearity (DNL) in the context of the ADC, and what is its ideal value?",
+    "agent_answer": "Differential non-linearity (DNL) is the maximum deviation of the actual code width from the ideal code width (1 LSB), with an ideal value of 0 LSB [Page 215]. Figure 23-13 on page 215 shows a diagram of Differential Non-linearity (DNL).\n",
+    "expected": "DNL is the maximum deviation of the actual code width (the interval between two adjacent transitions) from the ideal code width (1 LSB). The ideal value is 0 LSB.",
+    "latency": 5.77
+  },
+  {
+    "question": "When using the debugWIRE on-chip debug system, what changes occur to the physical interface of the RESET pin?",
+    "agent_answer": "When the debugWIRE enable (DWEN) fuse is programmed and lock bits are unprogrammed, the debugWIRE system within the target device is activated, and the RESET port pin is configured as a wire-AND (open-drain) bi-directional I/O pin with pull-up enabled, becoming the communication gateway between target and emulator [Page 221]. Figure 24-1 shows the debugWIRE setup [Page 221].\n",
+    "expected": "The RESET port pin is configured as a wire-AND (open-drain) bi-directional I/O pin with the pull-up enabled, serving as the communication gateway between the target and the emulator.",
+    "latency": 5.77
+  },
+  {
+    "question": "What is the specific behavior of the CPU during a Flash Page Erase operation versus a Page Write operation?",
+    "agent_answer": "During a page erase or page write operation to the NRWW section, the CPU is halted [Page 230]. If a boot loader software update is programming a page inside the RWW section, it is possible to read code from the flash, but only code that is located in the NRWW section [Page 230].\n",
+    "expected": "The CPU is halted during both the Page Erase and the Page Write operations.",
+    "latency": 6.69
+  },
+  {
+    "question": "In Fast PWM mode for Timer/Counter1, when is the Output Compare flag (OC1x) set if a non-inverting compare output mode is selected?",
+    "agent_answer": "In fast PWM mode, with non-inverting compare output mode, the output compare (OC1x) is cleared on the compare match between TCNT1 and OCR1x, and set at BOTTOM [Page 103].\n",
+    "expected": "The OC1x flag is set when a compare match occurs between TCNT1 and OCR1x.",
+    "latency": 13.09
+  },
+  {
+    "question": "How does the Multi-processor Communication Mode (MPCMn) filter incoming frames when enabled?",
+    "agent_answer": "When the MPCMn bit is written to one, all the incoming frames received by the USART receiver that do not contain address information will be ignored [Page 160].\n",
+    "expected": "When MPCMn is set to one, all incoming frames that do not contain address information are ignored by the USART receiver.",
+    "latency": 7.8
+  },
+  {
+    "question": "If the Analog Comparator Multiplexer Enable bit (ACME) is set and the ADC is switched off, which register bits select the negative input to the Analog Comparator?",
+    "agent_answer": "If the ACME bit is set and the ADC is switched off, MUX2..0 in ADMUX select the input pin to replace the negative input to the Analog Comparator [Page 202].\n",
+    "expected": "The MUX2..0 bits in the ADMUX register select the input pin to replace the negative input.",
+    "latency": 8.38
+  },
+  {
+    "question": "What is the specific procedure to change the System Clock Prescaler settings to ensure no unintentional frequency changes occur?",
+    "agent_answer": "To change the CLKPS bits, the CLKPCE bit must be written to logic one to enable the change [Page 33]. The CLKPCE bit is only updated when the other bits in CLKPR are simultaneously written to zero [Page 33]. CLKPCE is cleared by hardware four cycles after it is written or when CLKPS bits are written [Page 33]. Rewriting the CLKPCE bit within this time-out period does neither extend the time-out period, nor clear the CLKPCE bit [Page 33].\n",
+    "expected": "1. Write the Clock Prescaler Change Enable (CLKPCE) bit to one and all other bits in CLKPR to zero.\n2. Within four cycles, write the desired value to CLKPS while writing a zero to CLKPCE.",
+    "latency": 10.43
+  },
+  {
+    "question": "What does the TWI Status Code 0x08 represent when the device is in Master Transmitter Mode?",
+    "agent_answer": "In Master Transmitter Mode, the TWI Status Code 0x08 indicates that a START condition has been transmitted [Page 186]. The next action taken by the TWI hardware is to transmit SLA+W, and ACK or NOT ACK will be received [Page 186].\n",
+    "expected": "It indicates that a START condition has been transmitted.",
+    "latency": 12.86
+  },
+  {
+    "question": "How are the SBI and CBI instructions used for general digital I/O ports?",
+    "agent_answer": "The SBI and CBI instructions can change the direction of one port pin without unintentionally changing the direction of any other pin [Page 58].\n",
+    "expected": "I/O registers within the address range 0x00 - 0x1F are directly bit-accessible using the SBI and CBI instructions. This allows the value of single bits to be checked or manipulated without unintentionally affecting other bits in the same port.",
+    "latency": 8.78
+  },
+  {
+    "question": "What is the default clock source and configuration for the ATmega328P as shipped from the factory?",
+    "agent_answer": "The device is shipped with an internal RC oscillator at 8.0MHz and with the fuse CKDIV8 programmed, resulting in a 1.0MHz system clock [Page 25]. The startup time is set to maximum and the time-out period is enabled [Page 25]. The fuse settings are CKSEL = \u201c0010\u201d, SUT = \u201c10\u201d, and CKDIV8 = \u201c0\u201d [Page 25].\n",
+    "expected": "The device is shipped with the internal RC oscillator at 8.0MHz and with the CKDIV8 fuse programmed, resulting in a 1.0MHz system clock.",
+    "latency": 5.3
+  },
+  {
+    "question": "When accessing 16-bit registers (like TCNT1) that are mapped to two 8-bit registers, why is a temporary register used?",
+    "agent_answer": "To ensure that both the high and low bytes are read simultaneously when the CPU accesses these registers, the access is performed using an 8-bit temporary high byte register (TEMP) [Page 112]. The temporary register is updated with the TCNT1H value when the TCNT1L is read, and TCNT1H is updated with the temporary register value when TCNT1L is written [Page 95].\n",
+    "expected": "To ensure that both the high and low bytes are read or written simultaneously (atomic access). For a write, the high byte must be written to the temporary register first, which is then copied to the 16-bit register when the low byte is written.",
+    "latency": 5.17
+  },
+  {
+    "question": "What is the function of the 'Digital Input Disable Registers' (DIDR0 and DIDR1) and why are they used?",
+    "agent_answer": "Data Not Found.\n",
+    "expected": "They allow software to disable the digital input buffer on specific analog pins (ADC or Comparator inputs). This is done to reduce power consumption when an analog signal is applied that might be close to VCC/2, which would otherwise cause excessive current in the digital buffer.",
+    "latency": 4.63
+  },
+  {
+    "question": "Under what specific condition will a 'Brown-out Reset' be activated?",
+    "agent_answer": "A brown-out reset is activated when the BOD is enabled, and VCC decreases to a value below the trigger level (VBOT- in Figure 10-5) [Page 42]. The BOD circuit will only detect a drop in VCC if the voltage stays below the trigger level for longer than tBOD given in Section 28.6 [Page 42].\n",
+    "expected": "It activates when the supply voltage (VCC) decreases below the trigger level (VBOT) and stays below it for longer than the minimum pulse width (tBOD).",
+    "latency": 9.3
+  }
+]

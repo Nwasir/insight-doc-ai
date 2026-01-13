@@ -3,55 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InsightDoc AI</title>
+    <title>InsightDoc AI | Capstone</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div class="mobile-header">
-        <button id="menu-btn"><i class="fas fa-bars"></i></button>
+        <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
         <h2>InsightDoc AI</h2>
     </div>
 
     <div class="container">
-        <aside id="sidebar">
+        
+        <aside>
             <div class="logo-area">
                 <h2><i class="fas fa-robot"></i> InsightDoc</h2>
-                <p>Multimodal Technical Assistant</p>
+                <p>Hybrid Engine | Gemini 2.0</p>
             </div>
 
-            <div class="upload-zone" id="drop-zone">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>Drag & Drop PDF/Docx</p>
-                <input type="file" id="file-input" hidden>
-                <button class="btn-primary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+            <div class="upload-zone">
+                <label for="file-upload" style="cursor: pointer; width: 100%; display: block;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to Upload PDF</p>
+                </label>
+                <input type="file" id="file-upload" accept=".pdf" hidden>
             </div>
 
-            <div class="status-list" id="status-list">
-                </div>
+            <div class="status-box"></div>
         </aside>
 
         <main class="workspace">
+            
             <section class="chat-section">
                 <div class="chat-box" id="chat-box">
                     <div class="message bot">
-                        <p>Hello! Upload a technical manual, and I'll help you navigate it. I can see diagrams too!</p>
+                        <div class="avatar">🤖</div>
+                        <div class="content">
+                            Hello! Upload a technical manual, and I can answer specific questions about specs, installation, or troubleshooting.
+                        </div>
                     </div>
                 </div>
+
                 <div class="input-area">
-                    <input type="text" id="user-input" placeholder="Ask about the manual (e.g., 'What does the diagram on page 5 show?')">
+                    <input type="text" id="user-input" placeholder="Ask a question (e.g., 'What is the voltage on Page 5?')" autocomplete="off">
                     <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </section>
 
-            <section class="pdf-section" id="pdf-viewer">
-                <iframe id="pdf-frame" src="" title="PDF Viewer"></iframe>
+            <section class="pdf-section">
+                <button class="back-to-chat-btn" id="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Chat
+                </button>
+
                 <div class="pdf-placeholder">
                     <i class="fas fa-file-pdf"></i>
                     <p>Document Viewer</p>
                 </div>
+                <iframe id="pdf-frame" src=""></iframe>
             </section>
+
         </main>
     </div>
 

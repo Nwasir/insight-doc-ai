@@ -1,0 +1,102 @@
+[
+  {
+    "question": "What is the minimum interrupt execution response time in clock cycles, and what specific actions occur during this period?",
+    "expected_answer": "The minimum interrupt execution response time is four clock cycles. During this period, the program counter (PC) is pushed onto the stack, the stack pointer is decremented by two, and the interrupt vector address is executed.",
+    "source_page": 16
+  },
+  {
+    "question": "To prevent unintentional EEPROM writes, what specific sequence of steps must be followed when writing to the EEPROM?",
+    "expected_answer": "The procedure is:\n1. Wait until the EEPE bit becomes zero.\n2. Wait until SELFPRGEN in SPMCSR becomes zero.\n3. Write the new EEPROM address to EEAR.\n4. Write the new EEPROM data to EEDR.\n5. Write a logical one to the EEMPE bit while writing a zero to EEPE in EECR.\n6. Within four clock cycles after setting EEMPE, write a logical one to EEPE.",
+    "source_page": 21
+  },
+  {
+    "question": "How does the 'Alternative 1' method for filling the temporary page buffer during Flash self-programming differ from 'Alternative 2'?",
+    "expected_answer": "Alternative 1 fills the buffer before the page erase, allowing for a read-modify-write operation where data can be read, modified, and written back. Alternative 2 fills the buffer after the page erase; since the page is already erased, old data cannot be read while loading.",
+    "source_page": 223
+  },
+  {
+    "question": "In the context of the Watchdog Timer, what is the timed sequence required to clear the Watchdog System Reset Flag (WDE) or change the prescaler bits?",
+    "expected_answer": "In the same operation, write a logic one to the Watchdog Change Enable bit (WDCE) and WDE. Within the next four clock cycles, write the desired values to WDE and the Watchdog Prescaler bits (WDP), ensuring WDCE is cleared.",
+    "source_page": 44
+  },
+  {
+    "question": "When the ADC is in Free Running mode, how many clock cycles does the very first conversion take compared to normal conversions, and why?",
+    "expected_answer": "The first conversion takes 25 ADC clock cycles instead of the normal 13. This extended time is required to perform initialization of the ADC.",
+    "source_page": 218
+  },
+  {
+    "question": "Which Sleep Modes allow the Timer/Counter2 to continue operating if it is running in asynchronous mode?",
+    "expected_answer": "Timer/Counter2 in asynchronous mode can continue operating in Idle, ADC Noise Reduction, Power-save, and Extended Standby modes.",
+    "source_page": 34
+  },
+  {
+    "question": "How does the setting of the Clock Phase (CPHA) bit in the SPI Control Register affect data sampling relative to the SCK edge?",
+    "expected_answer": "If CPHA is 0, data is sampled on the leading (first) edge of SCK. If CPHA is 1, data is sampled on the trailing (last) edge of SCK.",
+    "source_page": 141
+  },
+  {
+    "question": "What is the definition of Differential Non-linearity (DNL) in the context of the ADC, and what is its ideal value?",
+    "expected_answer": "DNL is the maximum deviation of the actual code width (the interval between two adjacent transitions) from the ideal code width (1 LSB). The ideal value is 0 LSB.",
+    "source_page": 215
+  },
+  {
+    "question": "When using the debugWIRE on-chip debug system, what changes occur to the physical interface of the RESET pin?",
+    "expected_answer": "The RESET port pin is configured as a wire-AND (open-drain) bi-directional I/O pin with the pull-up enabled, serving as the communication gateway between the target and the emulator.",
+    "source_page": 221
+  },
+  {
+    "question": "What is the specific behavior of the CPU during a Flash Page Erase operation versus a Page Write operation?",
+    "expected_answer": "The CPU is halted during both the Page Erase and the Page Write operations.",
+    "source_page": 223
+  },
+  {
+    "question": "In Fast PWM mode for Timer/Counter1, when is the Output Compare flag (OC1x) set if a non-inverting compare output mode is selected?",
+    "expected_answer": "The OC1x flag is set when a compare match occurs between TCNT1 and OCR1x.",
+    "source_page": 101
+  },
+  {
+    "question": "How does the Multi-processor Communication Mode (MPCMn) filter incoming frames when enabled?",
+    "expected_answer": "When MPCMn is set to one, all incoming frames that do not contain address information are ignored by the USART receiver.",
+    "source_page": 160
+  },
+  {
+    "question": "If the Analog Comparator Multiplexer Enable bit (ACME) is set and the ADC is switched off, which register bits select the negative input to the Analog Comparator?",
+    "expected_answer": "The MUX2..0 bits in the ADMUX register select the input pin to replace the negative input.",
+    "source_page": 202
+  },
+  {
+    "question": "What is the specific procedure to change the System Clock Prescaler settings to ensure no unintentional frequency changes occur?",
+    "expected_answer": "1. Write the Clock Prescaler Change Enable (CLKPCE) bit to one and all other bits in CLKPR to zero.\n2. Within four cycles, write the desired value to CLKPS while writing a zero to CLKPCE.",
+    "source_page": 32
+  },
+  {
+    "question": "What does the TWI Status Code 0x08 represent when the device is in Master Transmitter Mode?",
+    "expected_answer": "It indicates that a START condition has been transmitted.",
+    "source_page": 186
+  },
+  {
+    "question": "How are the SBI and CBI instructions used for general digital I/O ports?",
+    "expected_answer": "I/O registers within the address range 0x00 - 0x1F are directly bit-accessible using the SBI and CBI instructions. This allows the value of single bits to be checked or manipulated without unintentionally affecting other bits in the same port.",
+    "source_page": 19
+  },
+  {
+    "question": "What is the default clock source and configuration for the ATmega328P as shipped from the factory?",
+    "expected_answer": "The device is shipped with the internal RC oscillator at 8.0MHz and with the CKDIV8 fuse programmed, resulting in a 1.0MHz system clock.",
+    "source_page": 25
+  },
+  {
+    "question": "When accessing 16-bit registers (like TCNT1) that are mapped to two 8-bit registers, why is a temporary register used?",
+    "expected_answer": "To ensure that both the high and low bytes are read or written simultaneously (atomic access). For a write, the high byte must be written to the temporary register first, which is then copied to the 16-bit register when the low byte is written.",
+    "source_page": 112
+  },
+  {
+    "question": "What is the function of the 'Digital Input Disable Registers' (DIDR0 and DIDR1) and why are they used?",
+    "expected_answer": "They allow software to disable the digital input buffer on specific analog pins (ADC or Comparator inputs). This is done to reduce power consumption when an analog signal is applied that might be close to VCC/2, which would otherwise cause excessive current in the digital buffer.",
+    "source_page": 204
+  },
+  {
+    "question": "Under what specific condition will a 'Brown-out Reset' be activated?",
+    "expected_answer": "It activates when the supply voltage (VCC) decreases below the trigger level (VBOT) and stays below it for longer than the minimum pulse width (tBOD).",
+    "source_page": 42
+  }
+]

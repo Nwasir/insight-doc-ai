@@ -1,13 +1,7 @@
 import os
-import io
+import fitz  # PyMuPDF
 from typing import List
-import google.generativeai as genai
-from PIL import Image
-from pypdf import PdfReader
 from langchain_core.documents import Document
-
-# Note: We are using a simple text extractor for now to avoid 'poppler' installation issues.
-# For full image extraction in production, we would use pdf2image.
 
 class SecurityCheck:
     @staticmethod
@@ -30,74 +24,48 @@ class FileConverter:
 
 class MultimodalIngestor:
     def __init__(self, api_key: str):
+        # We keep the api_key init to avoid breaking main.py, 
+        # even though we aren't calling the slow Vision API during ingestion anymore.
         self.api_key = api_key
-        genai.configure(api_key=self.api_key)
-        # We use the specific stable version to avoid 404 errors
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
-
-    def extract_images_from_page(self, page, page_num):
-        """
-        Attempts to pull images from the PDF page object.
-        """
-        images = []
-        try:
-            for count, image_file_object in enumerate(page.images):
-                # Extract image data
-                image_data = image_file_object.data
-                img = Image.open(io.BytesIO(image_data))
-                images.append(img)
-        except Exception as e:
-            # Silently fail on images if PDF structure is complex
-            pass
-        return images
-
-    def generate_image_description(self, img: Image.Image) -> str:
-        """
-        Sends the image to Gemini Vision to get a description.
-        """
-        try:
-            response = self.model.generate_content([
-                "Describe this technical diagram or image in detail for a blind user. Focus on components, labels, and connections.", 
-                img
-            ])
-            return response.text
-        except Exception as e:
-            print(f"Vision Warning: Could not describe image. {e}")
-            return "[Complex Image - Description Unavailable]"
 
     def process_pdf(self, file_path: str) -> List[Document]:
         """
-        Reads PDF, extracts text + images, and creates Documents.
+        Reads PDF using PyMuPDF (fitz), extracts text, and detects diagrams.
         """
         docs = []
-        reader = PdfReader(file_path)
         
-        print(f"📄 Processing {len(reader.pages)} pages...")
+        # Open the PDF
+        try:
+            doc = fitz.open(file_path)
+        except Exception as e:
+            print(f"❌ Error opening PDF: {e}")
+            return []
 
-        for i, page in enumerate(reader.pages):
+        print(f"👁️ Scanning {len(doc)} pages for text and diagrams...")
+
+        for i, page in enumerate(doc):
             page_num = i + 1
             
-            # 1. Get Text
-            text_content = page.extract_text() or ""
+            # 1. Extract Text
+            text_content = page.get_text()
             
-            # 2. Get Images & Describe them (Vision AI)
-            # --- DISABLED FOR STABILITY (PREVENTS 429 ERRORS) ---
-            image_descriptions = ""
-            # images = self.extract_images_from_page(page, page_num)
+            # 2. Vision Logic: Detect Images (Fast Check)
+            # We count the images on the page to alert the AI
+            image_list = page.get_images(full=True)
+            visual_note = ""
             
-            # if images:
-            #     print(f"   - Found {len(images)} images on Page {page_num}. Analyzing first one...")
-            #     desc = self.generate_image_description(images[0])
-            #     image_descriptions = f"\n\n[DIAGRAM DESCRIPTION]: {desc}"
-            # ----------------------------------------------------
+            if len(image_list) > 0:
+                # We append this hidden note so the AI knows there is a diagram here
+                visual_note = f"\n\n[Visual Note: This page contains {len(image_list)} diagrams or images. If the user asks about visual details, refer them to this page.]"
 
             # 3. Combine
-            full_content = text_content + image_descriptions
+            full_content = text_content + visual_note
             
-            doc = Document(
+            # 4. Create Document Object
+            document = Document(
                 page_content=full_content,
-                metadata={"source": file_path, "page": page_num}
+                metadata={"source": os.path.basename(file_path), "page": page_num}
             )
-            docs.append(doc)
+            docs.append(document)
 
         return docs
