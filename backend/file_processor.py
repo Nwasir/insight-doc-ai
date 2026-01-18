@@ -1,41 +1,91 @@
 import os
-import fitz
+import magic  # For Magic Number validation
+import fitz   # PyMuPDF
 import io
 from PIL import Image
 from typing import List
 from langchain_core.documents import Document
 import google.generativeai as genai
 from docx2pdf import convert
+import subprocess
 
 class SecurityCheck:
     @staticmethod
     def validate_file(file_path: str) -> bool:
         """
-        Simple check to ensure file is PDF or Docx.
+        Validates file using 'Magic Numbers' (MIME type) to prevent masquerading.
+        Returns True if the file is safe and matches its extension.
         """
+        print(f"🛡️  Security Scan: Inspecting '{os.path.basename(file_path)}'...")
+
+        # 1. Extension Check (Fast Fail)
         valid_extensions = {'.pdf', '.docx'}
         _, ext = os.path.splitext(file_path)
-        return ext.lower() in valid_extensions
+        if ext.lower() not in valid_extensions:
+            print(f"❌ Security Alert: Invalid extension '{ext}'")
+            return False
+
+        # 2. Magic Number Check (Deep Inspection)
+        try:
+            # Check the actual binary header
+            mime = magic.Magic(mime=True)
+            file_mime = mime.from_file(file_path)
+            
+            print(f"   - Detected MIME Type: {file_mime}")
+
+            allowed_mimes = {
+                'application/pdf',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            }
+            
+            if file_mime not in allowed_mimes:
+                print(f"❌ Security Alert: File content ({file_mime}) does not match allowed types.")
+                return False
+            
+            print("✅ Security Check Passed.")
+            return True
+
+        except Exception as e:
+            # If magic fails (e.g., library missing), we fail secure
+            print(f"⚠️ Security Error: Could not verify file type. {e}")
+            return False
 
 class FileConverter:
     @staticmethod
     def docx_to_pdf(docx_path: str) -> str:
         """
-        Converts DOCX to PDF using docx2pdf.
-        Returns the path to the new PDF file.
+        Converts DOCX to PDF using LibreOffice (Headless).
+        Works on Linux/Docker without MS Word.
         """
         try:
-            # Create a new filename with .pdf extension
+            print(f"🔄 Converting {docx_path} to PDF using LibreOffice...")
+            
+            # Get the directory where the file is stored
+            output_dir = os.path.dirname(docx_path)
+            
+            # Run LibreOffice in headless mode
+            # --headless: Runs without a GUI
+            # --convert-to pdf: Tells it to convert
+            # --outdir: Where to save the new PDF
+            subprocess.run([
+                "libreoffice", "--headless", "--convert-to", "pdf",
+                "--outdir", output_dir,
+                docx_path
+            ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            # The output filename will be the same base name but with .pdf
             base, _ = os.path.splitext(docx_path)
             pdf_path = f"{base}.pdf"
             
-            print(f"🔄 Converting {docx_path} to PDF...")
-            convert(docx_path, pdf_path)
-            
-            return pdf_path
+            if os.path.exists(pdf_path):
+                print(f"✅ Conversion Successful: {pdf_path}")
+                return pdf_path
+            else:
+                raise FileNotFoundError("PDF file was not generated.")
+                
         except Exception as e:
             print(f"❌ Conversion Failed: {e}")
-            # Fallback: Return original path (will likely fail downstream if not PDF)
+            # Fallback: Return original path (Text ingestion might work, but UI will break)
             return docx_path
 
 class MultimodalIngestor:

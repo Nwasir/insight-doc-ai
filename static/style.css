@@ -317,6 +317,13 @@ iframe {
     gap: 8px;
 }
 
+/* Drag & Drop Visual Feedback */
+.upload-zone.dragging {
+    border-color: var(--accent-blue);
+    background-color: rgba(59, 130, 246, 0.15); /* Blue tint */
+    transform: scale(1.02); /* Slight pulse effect */
+}
+
 /* --- Mobile Responsive Design --- */
 @media (max-width: 768px) {
     .mobile-header { display: flex; }
