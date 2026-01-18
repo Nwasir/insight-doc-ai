@@ -10,16 +10,24 @@ from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-# Reranking (The "Smart" Layer) - Switched to CrossEncoder for Stability
+# Observability (The "Eyes")
+from langfuse.langchain import CallbackHandler
+
+# Reranking
 from sentence_transformers import CrossEncoder
 
 # Load API Keys
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
+# Langfuse Credentials (ensure these are in your .env)
+LANGFUSE_PUBLIC_KEY = os.getenv("LANGFUSE_PUBLIC_KEY")
+LANGFUSE_SECRET_KEY = os.getenv("LANGFUSE_SECRET_KEY")
+LANGFUSE_HOST = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+
 class RAGEngine:
     def __init__(self):
-        # 1. Initialize Gemini (Production Mode)
+        # 1. Initialize Gemini
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash", 
             temperature=0,
@@ -37,9 +45,16 @@ class RAGEngine:
         )
 
         # 4. Initialize Reranker (Cross-Encoder)
-        # This is the "Judge". It scores how well the document matches the query.
         print("🚀 Initializing Cross-Encoder (Reranker)...")
         self.reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+
+        # 5. Initialize Langfuse Handler (The "Eyes")
+        # We only init if keys are present to prevent crashes
+        self.enable_observability = bool(LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY)
+        if self.enable_observability:
+            print("👀 Langfuse Observability Enabled.")
+        else:
+            print("⚠️ Langfuse keys not found. Observability disabled.")
 
     def ingest_document(self, docs: List[Document]):
         """
@@ -59,7 +74,6 @@ class RAGEngine:
 
     def stream_answer(self, query: str) -> Generator[str, None, None]:
         # --- PHASE 1: BROAD RETRIEVAL ---
-        # Fetch 25 chunks (Broad search)
         try:
             retriever = self.vector_db.as_retriever(search_kwargs={"k": 25})
             broad_docs = retriever.invoke(query)
@@ -67,28 +81,19 @@ class RAGEngine:
             yield f"⚠️ Retrieval Error: {str(e)}"
             return
         
-        # --- PHASE 2: RERANKING (Cross-Encoder) ---
-        # We pair the query with each document and ask the model to score them
+        # --- PHASE 2: RERANKING ---
         try:
-            # Prepare pairs: [("query", "doc1"), ("query", "doc2")...]
             pairs = [[query, doc.page_content] for doc in broad_docs]
-            
-            # Get scores (returns a list of floats)
             scores = self.reranker.predict(pairs)
             
-            # Attach scores to documents
             ranked_docs = []
             for i, doc in enumerate(broad_docs):
                 ranked_docs.append({"doc": doc, "score": scores[i]})
             
-            # Sort by score (Highest first)
             ranked_docs.sort(key=lambda x: x["score"], reverse=True)
-            
-            # Keep Top 5
             top_results = [item["doc"] for item in ranked_docs[:5]]
             
         except Exception as e:
-            # Fallback: If reranking fails for any reason, just use the first 5
             print(f"⚠️ Reranking Warning: {e}")
             top_results = broad_docs[:5]
 
@@ -103,7 +108,10 @@ class RAGEngine:
         
         RULES:
         1. ALWAYS cite the page number like [Page X] at the end of the sentence.
-        2. If the context contains a tag like "[Visual Note: ...]", you can mention that a diagram exists on that page.
+        2. If the context contains a visual description (e.g., "[Visual Diagram...]"), use that information to describe diagrams or charts. 
+
+[Image of Technical Diagram]
+
         3. If the context does not contain the answer, say "Data Not Found."
 
         CONTEXT:
@@ -118,8 +126,16 @@ class RAGEngine:
         
         chain = prompt | self.llm | StrOutputParser()
         
+        # Configure Callbacks (Langfuse)
+        run_config = {}
+        if self.enable_observability:
+            langfuse_handler = CallbackHandler()            
+            
+            run_config["callbacks"] = [langfuse_handler]
+        
         try:
-            for chunk in chain.stream({"context": context_text, "question": query}):
+            # We pass 'run_config' to enable tracing
+            for chunk in chain.stream({"context": context_text, "question": query}, config=run_config):
                 yield chunk
         except Exception as e:
             yield f"⚠️ Generator Error: {str(e)}"
